@@ -2,6 +2,8 @@
 
 FileFinder is a macOS application that allows you to search for and copy specific files from your computer based on a list of file names provided in a text file. This tool is especially useful when you need to find and gather files with specific names scattered throughout your computer.
 
+![FileFinder Screenshot](./Screenshots/screenshotv1-0-0.png)
+
 ## Features
 
 - Search for files based on a list of file names provided in a text file
