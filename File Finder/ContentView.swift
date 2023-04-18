@@ -10,6 +10,7 @@ struct ContentView: View {
     @State private var isSearching: Bool = false
     @State private var filesScanned: Int = 0
     @State private var filesCopied: Int = 0
+    @State private var startTime: Date = Date()
 
     func getFileNames(from textFile: URL) -> [String] {
         do {
@@ -89,15 +90,22 @@ struct ContentView: View {
         
         DispatchQueue.main.async {
             self.consoleText += "Searched \(self.filesScanned) files\n"
-            self.consoleText += "Copied \(self.filesCopied) files"
+            self.consoleText += "Copied \(self.filesCopied) files\n"
+
+            // Calculate the elapsed time
+            let elapsedTime = Date().timeIntervalSince(self.startTime)
+            let elapsedTimeFormatted = String(format: "%.2f", elapsedTime)
+            self.consoleText += "Time elapsed: \(elapsedTimeFormatted) seconds"
         }
+
     }
 
 
 
     func startProcessing() {
         consoleText += "Starting file processing...\n"
-        
+        startTime = Date() // Record the start time
+
         guard let inputFileURL = URL(string: "file://" + inputFilePath),
               let outputFolderURL = URL(string: "file://" + outputFolderPath) else {
             consoleText += "Invalid input file or output folder path\n"
