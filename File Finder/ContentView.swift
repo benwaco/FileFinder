@@ -19,7 +19,7 @@ struct ContentView: View {
     @State private var filesScanned: Int = 0
     @State private var filesCopied: Int = 0
     @State private var startTime: Date = Date()
-
+    
     func getFileNames(from textFile: URL) -> [String] {
         do {
             let fileContent = try String(contentsOf: textFile, encoding: .utf8)
@@ -30,12 +30,12 @@ struct ContentView: View {
             return []
         }
     }
-
+    
     func searchFiles(in directory: URL, names: [String]) -> [URL] {
         let fileManager = FileManager.default
         let enumerator = fileManager.enumerator(at: directory, includingPropertiesForKeys: nil, options: excludeSystemFolders ? [.skipsPackageDescendants] : [])
         var foundFiles: [URL] = []
-
+        
         while let file = enumerator?.nextObject() as? URL {
             if excludeSystemFolders {
                 if isSystemFolder(file.path) {
@@ -51,17 +51,17 @@ struct ContentView: View {
             if names.contains(file.lastPathComponent) {
                 foundFiles.append(file)
             }
-
+            
         }
-
+        
         return foundFiles
     }
-
+    
     func searchFilesConcurrently(in directories: [URL], names: [String]) -> [URL] {
         let queue = DispatchQueue(label: "searchFiles", qos: .userInitiated, attributes: .concurrent)
         let group = DispatchGroup()
         var foundFiles: [URL] = []
-
+        
         DispatchQueue.concurrentPerform(iterations: directories.count) { index in
             group.enter()
             let directory = directories[index]
@@ -71,13 +71,13 @@ struct ContentView: View {
                 group.leave()
             }
         }
-
+        
         group.wait()
-
+        
         return foundFiles
     }
-
-
+    
+    
     func isSystemFolder(_ path: String) -> Bool {
         let systemFolders = [
             "/System",
@@ -93,18 +93,18 @@ struct ContentView: View {
         ]
         return systemFolders.contains { path.starts(with: $0) }
     }
-
-
-
-
-
+    
+    
+    
+    
+    
     func copyFiles(_ files: [URL], to destination: URL) {
         let fileManager = FileManager.default
         var failedCopies = 0
-
+        
         for file in files {
             let target = destination.appendingPathComponent(file.lastPathComponent)
-
+            
             do {
                 try fileManager.copyItem(at: file, to: target)
                 DispatchQueue.main.async {
@@ -119,18 +119,19 @@ struct ContentView: View {
         DispatchQueue.main.async {
             self.consoleText += "Searched \(self.filesScanned) files\n"
             self.consoleText += "Copied \(self.filesCopied) files\n"
-
+            
             // Calculate the elapsed time
             let elapsedTime = Date().timeIntervalSince(self.startTime)
             let elapsedTimeFormatted = String(format: "%.2f", elapsedTime)
             self.consoleText += "Time elapsed: \(elapsedTimeFormatted) seconds\n"
         }
-
+        
     }
-
-
-
+    
+    
+    
     func startProcessing() {
+        consoleText = "" // Clear the console when starting a new search
         consoleText += "Starting file processing...\n"
         startTime = Date() // Record the start time
         
@@ -157,9 +158,8 @@ struct ContentView: View {
             }
         }
     }
-
-
-
+    
+    
     
     
     var body: some View {
@@ -185,12 +185,14 @@ struct ContentView: View {
             Button("Start") {
                 startProcessing()
             }
+            .disabled(isSearching) // Disable the button when isSearching is true
+            
             if isSearching {
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle())
                 Text("\(filesScanned) files scanned")
             }
-
+            
             ScrollView {
                 Text(consoleText)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -230,7 +232,7 @@ struct ContentView: View {
             }
         }
     }
-
+    
 }
 
 struct ContentView_Previews: PreviewProvider {
