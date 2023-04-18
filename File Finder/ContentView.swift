@@ -1,3 +1,11 @@
+//
+//  ContentView.swift
+//  ContentView
+//
+//  Created by Ben Waco on 4/17/23.
+//  Copyright © 2023 Ben Waco. All rights reserved.
+//
+
 import SwiftUI
 import AppKit
 import Foundation
