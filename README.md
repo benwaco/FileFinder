@@ -37,11 +37,11 @@ open FileFinder.xcodeproj
 
 1. Go to the [releases](https://github.com/benwaco/FileFinder/releases) page.
 2. Download the latest release's `.zip` file.
-3. Extract the `.zip` file and move the `FileFinder.app` to your Applications folder.
+3. Extract the `.zip` file and move the `File Finder.app` to your Applications folder.
 
 ## Usage
 
-1. Open FileFinder.
+1. Open File Finder.
 2. Click on "Browse" next to "Input File" and select the text file containing the list of file names you want to search for. The file names should be one per line.
 3. Click on "Browse" next to "Output Folder" and select the folder where you want to copy the found files.
 4. Optionally, check the "Exclude system folders" checkbox if you want to skip searching within system folders.
