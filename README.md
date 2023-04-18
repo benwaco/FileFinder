@@ -24,14 +24,19 @@ To use File Finder, you can either clone the repository and build the applicatio
 git clone https://github.com/benwaco/FileFinder.git
 ```
 
-2. Open the project in Xcode and build it:
+2. Change into the cloned directory:
 
 ```
-open File Finder.xcodeproj
+cd FileFinder
 ```
 
+3. Open the project in Xcode and build it:
 
-3. Run the application on your macOS device.
+```
+open "File Finder.xcodeproj"
+```
+
+4. Run the application on your macOS device.
 
 ### Download pre-built release
 
