@@ -8,7 +8,9 @@ struct ContentView: View {
     @State private var excludeSystemFolders: Bool = true
     @State private var consoleText: String = ""
     @State private var isSearching: Bool = false
-    
+    @State private var filesScanned: Int = 0
+    @State private var filesCopied: Int = 0
+
     func getFileNames(from textFile: URL) -> [String] {
         do {
             let fileContent = try String(contentsOf: textFile, encoding: .utf8)
@@ -32,6 +34,9 @@ struct ContentView: View {
                     continue
                 } else if file.pathComponents.contains(where: { $0.hasPrefix(".") }) && !file.path.starts(with: FileManager.default.homeDirectoryForCurrentUser.path) {
                     continue
+                }
+                DispatchQueue.main.async {
+                    self.filesScanned += 1
                 }
             }
             print("Checking file: \(file.lastPathComponent)") // Debugging info
@@ -66,17 +71,29 @@ struct ContentView: View {
 
     func copyFiles(_ files: [URL], to destination: URL) {
         let fileManager = FileManager.default
+        var failedCopies = 0
 
         for file in files {
             let target = destination.appendingPathComponent(file.lastPathComponent)
 
             do {
                 try fileManager.copyItem(at: file, to: target)
+                DispatchQueue.main.async {
+                    self.filesCopied += 1
+                }
             } catch {
                 print("Error copying file: \(error)")
+                failedCopies += 1
             }
         }
+        
+        DispatchQueue.main.async {
+            self.consoleText += "Searched \(self.filesScanned) files\n"
+            self.consoleText += "Copied \(self.filesCopied) files"
+        }
     }
+
+
 
     func startProcessing() {
         consoleText += "Starting file processing...\n"
@@ -88,6 +105,8 @@ struct ContentView: View {
         }
         
         isSearching = true // Set isSearching to true when starting the search
+        filesScanned = 0 // Reset filesScanned when starting the search
+        filesCopied = 0 // Reset filesCopied when starting the search
         DispatchQueue.global(qos: .userInitiated).async {
             let fileNames = self.getFileNames(from: inputFileURL)
             
@@ -102,18 +121,14 @@ struct ContentView: View {
                 }
             }
             
-            DispatchQueue.main.async {
-                self.consoleText += "Found \(foundFiles.count) files\n"
-            }
-            
             self.copyFiles(foundFiles, to: outputFolderURL)
             
             DispatchQueue.main.async {
-                self.consoleText += "Processed \(foundFiles.count) files\n"
+   }
                 self.isSearching = false // Set isSearching to false when the search is complete
             }
         }
-    }
+    
 
 
 
@@ -145,7 +160,9 @@ struct ContentView: View {
             if isSearching {
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle())
+                Text("\(filesScanned) files scanned")
             }
+
             ScrollView {
                 Text(consoleText)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -154,7 +171,8 @@ struct ContentView: View {
         }
         .padding()
         HStack() {
-            Text("Developed by Ben Waco. Source Code: ")
+            Text("Developed by Ben Waco. Source Code: https://github.com/benwaco/FileFinder").padding()
+            
         }
     }
     
