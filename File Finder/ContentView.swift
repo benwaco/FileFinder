@@ -31,7 +31,7 @@ struct ContentView: View {
         while let file = enumerator?.nextObject() as? URL {
             if excludeSystemFolders {
                 if isSystemFolder(file.path) {
-                    enumerator?.skipDescendents()
+                    enumerator?.skipDescendants()
                     continue
                 } else if file.pathComponents.contains(where: { $0.hasPrefix(".") }) && !file.path.starts(with: FileManager.default.homeDirectoryForCurrentUser.path) {
                     continue
@@ -40,7 +40,6 @@ struct ContentView: View {
                     self.filesScanned += 1
                 }
             }
-            print("Checking file: \(file.lastPathComponent)") // Debugging info
             if names.contains(file.lastPathComponent) {
                 foundFiles.append(file)
             }
@@ -49,6 +48,27 @@ struct ContentView: View {
 
         return foundFiles
     }
+
+    func searchFilesConcurrently(in directories: [URL], names: [String]) -> [URL] {
+        let queue = DispatchQueue(label: "searchFiles", qos: .userInitiated, attributes: .concurrent)
+        let group = DispatchGroup()
+        var foundFiles: [URL] = []
+
+        DispatchQueue.concurrentPerform(iterations: directories.count) { index in
+            group.enter()
+            let directory = directories[index]
+            let results = searchFiles(in: directory, names: names)
+            queue.async(flags: .barrier) {
+                foundFiles.append(contentsOf: results)
+                group.leave()
+            }
+        }
+
+        group.wait()
+
+        return foundFiles
+    }
+
 
     func isSystemFolder(_ path: String) -> Bool {
         let systemFolders = [
@@ -95,7 +115,7 @@ struct ContentView: View {
             // Calculate the elapsed time
             let elapsedTime = Date().timeIntervalSince(self.startTime)
             let elapsedTimeFormatted = String(format: "%.2f", elapsedTime)
-            self.consoleText += "Time elapsed: \(elapsedTimeFormatted) seconds"
+            self.consoleText += "Time elapsed: \(elapsedTimeFormatted) seconds\n"
         }
 
     }
@@ -105,7 +125,7 @@ struct ContentView: View {
     func startProcessing() {
         consoleText += "Starting file processing...\n"
         startTime = Date() // Record the start time
-
+        
         guard let inputFileURL = URL(string: "file://" + inputFilePath),
               let outputFolderURL = URL(string: "file://" + outputFolderPath) else {
             consoleText += "Invalid input file or output folder path\n"
@@ -118,25 +138,17 @@ struct ContentView: View {
         DispatchQueue.global(qos: .userInitiated).async {
             let fileNames = self.getFileNames(from: inputFileURL)
             
-            // Search in the user's home directory
+            // Search in the user's home directory and mounted volumes
             let homeDirectory = FileManager.default.homeDirectoryForCurrentUser
-            var foundFiles = self.searchFiles(in: homeDirectory, names: fileNames)
-            
-            // Search in mounted volumes (e.g., external storage devices)
             if let volumes = FileManager.default.mountedVolumeURLs(includingResourceValuesForKeys: nil, options: []) {
-                for volume in volumes {
-                    foundFiles.append(contentsOf: self.searchFiles(in: volume, names: fileNames))
-                }
-            }
-            
-            self.copyFiles(foundFiles, to: outputFolderURL)
-            
-            DispatchQueue.main.async {
-   }
-                self.isSearching = false // Set isSearching to false when the search is complete
+                let directories = [homeDirectory] + volumes
+                let foundFiles = self.searchFilesConcurrently(in: directories, names: fileNames)
+                
+                self.copyFiles(foundFiles, to: outputFolderURL)
+                self.isSearching = false
             }
         }
-    
+    }
 
 
 
