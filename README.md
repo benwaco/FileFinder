@@ -1,8 +1,8 @@
-# FileFinder
+# File Finder
 
-FileFinder is a macOS application that allows you to search for and copy specific files from your computer based on a list of file names provided in a text file. This tool is especially useful when you need to find and gather files with specific names scattered throughout your computer.
+File Finder is a macOS application that allows you to search for and copy specific files from your computer based on a list of file names provided in a text file. This tool is especially useful when you need to find and gather files with specific names scattered throughout your computer.
 
-![FileFinder Screenshot](./Screenshots/screenshotv1-0-0.png)
+![File Finder Screenshot](./Screenshots/screenshotv1-0-0.png)
 
 ## Features
 
@@ -14,7 +14,7 @@ FileFinder is a macOS application that allows you to search for and copy specifi
 
 ## Installation
 
-To use FileFinder, you can either clone the repository and build the application using Xcode, or download the latest pre-built release.
+To use File Finder, you can either clone the repository and build the application using Xcode, or download the latest pre-built release.
 
 ### Clone and build
 
@@ -27,7 +27,7 @@ git clone https://github.com/benwaco/FileFinder.git
 2. Open the project in Xcode and build it:
 
 ```
-open FileFinder.xcodeproj
+open File Finder.xcodeproj
 ```
 
 
@@ -53,8 +53,8 @@ Contributions are welcome! If you have any ideas, suggestions, or bug reports, p
 
 ## License
 
-FileFinder is released under the BSD 3-Clause License. See [LICENSE](LICENSE) for more information.
+File Finder is released under the BSD 3-Clause License. See [LICENSE](LICENSE) for more information.
 
 ## Credits
 
-FileFinder is developed by Ben Waco.
+File Finder is developed by Ben Waco.
