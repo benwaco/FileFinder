@@ -179,31 +179,32 @@ struct ContentView: View {
         consoleText = "" // Clear the console when starting a new search
         consoleText += "Starting file processing...\n"
         startTime = Date() // Record the start time
-        
-        guard let inputFileURL = URL(string: "file://" + inputFilePath),
-              let outputFolderURL = URL(string: "file://" + outputFolderPath) else {
-            consoleText += "Invalid input file or output folder path\n"
+
+        guard let inputFileURL = URL(string: "file://" + inputFilePath) else {
+            consoleText += "Invalid input file path\n"
             return
         }
         
+        let outputFolderURL = URL(fileURLWithPath: outputFolderPath)
+
         isSearching = true // Set isSearching to true when starting the search
         filesScanned = 0 // Reset filesScanned when starting the search
         filesCopied = 0 // Reset filesCopied when starting the search
         DispatchQueue.global(qos: .userInitiated).async {
             let fileNames = self.getFileNames(from: inputFileURL)
-            
+
             // Search in the user's home directory and mounted volumes
             let homeDirectory = FileManager.default.homeDirectoryForCurrentUser
             if let volumes = FileManager.default.mountedVolumeURLs(includingResourceValuesForKeys: nil, options: []) {
                 let directories = [homeDirectory] + volumes
                 let foundFiles = self.searchFilesConcurrently(in: directories, names: fileNames)
-                
+
                 self.copyFiles(foundFiles, to: outputFolderURL)
                 self.isSearching = false
             }
         }
     }
-    
+
     
     
     
