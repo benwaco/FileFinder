@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  ContentView
+//  File Finder
 //
 //  Created by Ben Waco on 4/17/23.
 //  Copyright © 2023 Ben Waco. All rights reserved.
@@ -19,6 +19,7 @@ struct ContentView: View {
     @State private var filesScanned: Int = 0
     @State private var filesCopied: Int = 0
     @State private var startTime: Date = Date()
+    @State private var hasRequestedFullDiskAccess = false
     
     func getFileNames(from textFile: URL) -> [String] {
         do {
@@ -128,6 +129,50 @@ struct ContentView: View {
         
     }
     
+    func hasFullDiskAccess() -> Bool {
+        let protectedFolder = URL(fileURLWithPath: "/Library/Application Support/com.apple.TCC")
+        let fileManager = FileManager.default
+        
+        do {
+            let _ = try fileManager.contentsOfDirectory(atPath: protectedFolder.path)
+            return true
+        } catch {
+            return false
+        }
+    }
+    
+    
+    func requestFullDiskAccess() -> Bool {
+        guard !hasFullDiskAccess() else { return true }
+        let alert = NSAlert()
+        alert.messageText = "Full Disk Access Required"
+        alert.informativeText = """
+        This app requires full disk access to search for files across your system.
+        
+        Please follow these steps:
+        
+        1. Open System Preferences.
+        2. Go to Security & Privacy > Privacy > Full Disk Access.
+        3. Click the lock icon to make changes.
+        4. Click the '+' button and add this app to the list.
+        
+        Once you have granted full disk access, you can use this app to search for files. If the app doesn't work as expected, please try restarting it.
+        """
+        alert.addButton(withTitle: "Open System Preferences")
+        alert.addButton(withTitle: "Cancel")
+        
+        let response = alert.runModal()
+        
+        if response == .alertFirstButtonReturn {
+            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles") {
+                NSWorkspace.shared.open(url)
+            } else {
+                consoleText += "Failed to open System Preferences. Please open it manually and grant access to this app.\n"
+            }
+        }
+        return false
+    }
+    
     
     
     func startProcessing() {
@@ -183,7 +228,9 @@ struct ContentView: View {
             Toggle("Exclude system folders", isOn: $excludeSystemFolders)
             
             Button("Start") {
-                startProcessing()
+                if requestFullDiskAccess() {
+                    startProcessing()
+                }
             }
             .disabled(isSearching) // Disable the button when isSearching is true
             
@@ -200,6 +247,7 @@ struct ContentView: View {
             }
         }
         .padding()
+        
         HStack() {
             Text("Developed by Ben Waco. Source Code: https://github.com/benwaco/FileFinder").padding()
             
